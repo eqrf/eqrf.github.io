@@ -3,35 +3,1035 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Interactive Histology Experience</title>
+    <title>Operation Bronchiole: The RSV Histology Detective</title>
     <style>
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 100vh;
+        :root {
+            --primary: #1e40af;
+            --primary-light: #3b82f6;
+            --accent: #0d9488;
+            --danger: #e11d48;
+            --warning: #f59e0b;
+            --success: #16a34a;
+            --bg: #f0f7ff;
+            --card: #ffffff;
+            --text: #1e293b;
+            --muted: #64748b;
+        }
+
+        * {
+            box-sizing: border-box;
             margin: 0;
-            background-color: #f8f9fa;
-            color: #333;
+            padding: 0;
         }
-        .container {
-            text-align: center;
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            line-height: 1.6;
+            padding-bottom: 60px;
         }
-        h1 {
-            font-size: 3rem;
+
+        /* Header & Progress Bar */
+        header {
+            background: linear-gradient(135deg, #0f172a, #1e3a8a);
+            color: white;
+            padding: 1.5rem 2rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+        .header-top {
+            max-width: 1050px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .brand h1 {
+            font-size: 1.5rem;
+            letter-spacing: -0.5px;
+        }
+
+        .brand span {
+            font-size: 0.9rem;
+            color: #93c5fd;
+        }
+
+        .progress-wrapper {
+            background: rgba(255,255,255,0.15);
+            padding: 0.5rem 1rem;
+            border-radius: 999px;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        .progress-bar-bg {
+            width: 140px;
+            height: 10px;
+            background: rgba(255,255,255,0.25);
+            border-radius: 99px;
+            overflow: hidden;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            width: 0%;
+            background: #34d399;
+            transition: width 0.4s ease;
+        }
+
+        /* Navigation Tabs */
+        .nav-tabs {
+            max-width: 1050px;
+            margin: 1.5rem auto 0;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 0.75rem;
+            padding: 0 1rem;
+        }
+
+        .tab-btn {
+            background: white;
+            border: 2px solid #cbd5e1;
+            padding: 0.85rem 1rem;
+            border-radius: 12px;
+            font-weight: 700;
+            color: var(--muted);
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            gap: 0.6rem;
+        }
+
+        .tab-btn:hover {
+            border-color: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .tab-btn.active {
+            background: var(--primary);
+            color: white;
+            border-color: var(--primary);
+            box-shadow: 0 4px 12px rgba(30, 64, 175, 0.25);
+        }
+
+        .tab-btn.completed .badge {
+            background: var(--success);
+            color: white;
+        }
+
+        .badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 26px;
+            height: 26px;
+            border-radius: 50%;
+            background: #e2e8f0;
+            color: var(--text);
+            font-size: 0.8rem;
+            flex-shrink: 0;
+        }
+
+        .tab-btn.active .badge {
+            background: white;
+            color: var(--primary);
+        }
+
+        /* Main Container */
+        main {
+            max-width: 1050px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+
+        .mission-section {
+            display: none;
+            background: var(--card);
+            border-radius: 16px;
+            padding: 2rem;
+            box-shadow: 0 6px 20px rgba(0,0,0,0.06);
+            border: 1px solid #e2e8f0;
+        }
+
+        .mission-section.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        h2 {
+            color: var(--primary);
+            font-size: 1.6rem;
             margin-bottom: 0.5rem;
         }
-        p {
-            font-size: 1.2rem;
-            color: #666;
+
+        .subtitle {
+            color: var(--muted);
+            font-size: 1.05rem;
+            margin-bottom: 1.5rem;
+            padding-bottom: 1rem;
+            border-bottom: 2px solid #f1f5f9;
+        }
+
+        .case-brief {
+            background: #eff6ff;
+            border-left: 5px solid var(--primary-light);
+            padding: 1rem 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 1.5rem;
+        }
+
+        /* Mission 1: Hierarchy Builder */
+        .hierarchy-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
+            gap: 1rem;
+            margin: 1.5rem 0;
+        }
+
+        .level-card {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 1.25rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .level-card:hover {
+            border-color: var(--primary-light);
+            background: #f0f9ff;
+        }
+
+        .level-card.selected {
+            border-color: var(--accent);
+            background: #ccfbf1;
+        }
+
+        .level-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .zoom-viewer {
+            background: #0f172a;
+            color: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            margin-top: 1rem;
+            min-height: 150px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+
+        /* Mission 2: Organelle Explorer */
+        .cell-explorer {
+            display: grid;
+            grid-template-columns: 1.1fr 1fr;
+            gap: 2rem;
+            align-items: center;
+        }
+
+        @media (max-width: 768px) {
+            .cell-explorer {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .svg-container {
+            background: #f8fafc;
+            border: 2px solid #e2e8f0;
+            border-radius: 16px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .organelle-hotspot {
+            cursor: pointer;
+            transition: filter 0.2s, transform 0.2s;
+        }
+
+        .organelle-hotspot:hover {
+            filter: drop-shadow(0 0 8px rgba(59, 130, 246, 0.8));
+        }
+
+        .info-panel {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 1.5rem;
+        }
+
+        .checklist {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .check-pill {
+            padding: 0.35rem 0.75rem;
+            border-radius: 99px;
+            background: #e2e8f0;
+            font-size: 0.85rem;
+            font-weight: 600;
+        }
+
+        .check-pill.done {
+            background: #dcfce7;
+            color: #166534;
+            border: 1px solid #86efac;
+        }
+
+        /* Mission 3: RSV Syncytia Simulator */
+        .sim-stage {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 1.5rem;
+            color: white;
+            margin: 1.5rem 0;
+        }
+
+        .sim-controls {
+            background: rgba(255,255,255,0.1);
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            align-items: center;
+            justify-content: space-between;
+            gap: 1rem;
+        }
+
+        .stage-buttons {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .stage-btn {
+            background: #334155;
+            color: white;
+            border: 2px solid #475569;
+            padding: 0.5rem 1rem;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+
+        .stage-btn.active {
+            background: var(--danger);
+            border-color: #fda4af;
+        }
+
+        .sim-readout {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .metric-box {
+            background: rgba(255,255,255,0.08);
+            padding: 0.85rem;
+            border-radius: 8px;
+            border-left: 4px solid #38bdf8;
+        }
+
+        /* Mission 4: Virtual Microscope & H&E Lab */
+        .lab-bench {
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        @media (max-width: 768px) {
+            .lab-bench {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .microscope-viewport {
+            width: 280px;
+            height: 280px;
+            margin: 0 auto;
+            border-radius: 50%;
+            border: 10px solid #334155;
+            overflow: hidden;
+            position: relative;
+            background: #f8fafc;
+            box-shadow: inset 0 0 25px rgba(0,0,0,0.35);
+            transition: filter 0.2s;
+        }
+
+        /* Buttons & Quiz Cards */
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0.75rem 1.5rem;
+            border-radius: 8px;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .btn-primary:hover {
+            background: #1d4ed8;
+        }
+
+        .quiz-box {
+            background: #f8fafc;
+            border: 2px solid #cbd5e1;
+            border-radius: 12px;
+            padding: 1.25rem;
+            margin-top: 1.5rem;
+        }
+
+        .quiz-options {
+            display: grid;
+            gap: 0.6rem;
+            margin-top: 0.75rem;
+        }
+
+        .quiz-opt {
+            background: white;
+            border: 2px solid #cbd5e1;
+            padding: 0.75rem 1rem;
+            border-radius: 8px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 0.95rem;
+            font-weight: 500;
+            transition: all 0.15s;
+        }
+
+        .quiz-opt:hover {
+            border-color: var(--primary-light);
+            background: #eff6ff;
+        }
+
+        .quiz-opt.correct {
+            background: #dcfce7;
+            border-color: var(--success);
+            color: #14532d;
+            font-weight: 700;
+        }
+
+        .quiz-opt.wrong {
+            background: #fee2e2;
+            border-color: var(--danger);
+            color: #7f1d1d;
+        }
+
+        .feedback-msg {
+            margin-top: 0.75rem;
+            font-weight: 600;
+            font-size: 0.95rem;
         }
     </style>
 </head>
 <body>
-    <div class="container">
-        <h1>In Development</h1>
-        <p>This interactive histology experience is currently being built.</p>
+
+<header>
+    <div class="header-top">
+        <div class="brand">
+            <h1>🔬 Operation Bronchiole: RSV Detective</h1>
+            <span>Interactive Grade 7 & 8 Cellular Histology Experience</span>
+        </div>
+        <div class="progress-wrapper">
+            <span>Lab Progress:</span>
+            <div class="progress-bar-bg">
+                <div class="progress-bar-fill" id="progressBar"></div>
+            </div>
+            <span id="progressText">0 / 4 Missions</span>
+        </div>
     </div>
+</header>
+
+<nav class="nav-tabs">
+    <button class="tab-btn active" onclick="switchTab(0)" id="tab0">
+        <span class="badge" id="badge0">1</span>
+        <div>
+            <div>Body Zoom-In</div>
+            <small>Cells to Systems</small>
+        </div>
+    </button>
+    <button class="tab-btn" onclick="switchTab(1)" id="tab1">
+        <span class="badge" id="badge1">2</span>
+        <div>
+            <div>Cell Scanner</div>
+            <small>Organelle Functions</small>
+        </div>
+    </button>
+    <button class="tab-btn" onclick="switchTab(2)" id="tab2">
+        <span class="badge" id="badge2">3</span>
+        <div>
+            <div>RSV Invasion</div>
+            <small>Syncytia Simulator</small>
+        </div>
+    </button>
+    <button class="tab-btn" onclick="switchTab(3)" id="tab3">
+        <span class="badge" id="badge3">4</span>
+        <div>
+            <div>Histology Lab</div>
+            <small>H&E Stain & Diagnose</small>
+        </div>
+    </button>
+</nav>
+
+<main>
+    <!-- ================= MISSION 1: HIERARCHY ================= -->
+    <section class="mission-section active" id="mission0">
+        <h2>Mission 1: Zooming Into the Lungs</h2>
+        <p class="subtitle">Curriculum Goal: Describe the organization of cells into tissues, organs, and systems.</p>
+
+        <div class="case-brief">
+            <strong>🏥 Patient Case:</strong> A patient arrives at the clinic with heavy coughing and wheezing caused by <strong>Respiratory Syncytial Virus (RSV)</strong>. Before we can see what the virus is doing under a microscope, we need to zoom in from the whole body down to a single cell!
+        </div>
+
+        <p><strong>Step 1:</strong> Click each biological level below from <strong>Largest (1)</strong> to <strong>Smallest (4)</strong> to calibrate your zoom lens:</p>
+
+        <div class="hierarchy-grid">
+            <div class="level-card" onclick="inspectLevel('system', this)">
+                <div class="level-icon">🫁</div>
+                <h3>1. Organ System</h3>
+                <p>Respiratory System</p>
+            </div>
+            <div class="level-card" onclick="inspectLevel('organ', this)">
+                <div class="level-icon">🌿</div>
+                <h3>2. Organ</h3>
+                <p>Lungs & Bronchioles</p>
+            </div>
+            <div class="level-card" onclick="inspectLevel('tissue', this)">
+                <div class="level-icon">🧱</div>
+                <h3>3. Tissue</h3>
+                <p>Epithelial Tissue</p>
+            </div>
+            <div class="level-card" onclick="inspectLevel('cell', this)">
+                <div class="level-icon">🦠</div>
+                <h3>4. Cell</h3>
+                <p>Ciliated Epithelial Cell</p>
+            </div>
+        </div>
+
+        <div class="zoom-viewer" id="zoomReadout">
+            <h4>🔍 Zoom Lens Readout</h4>
+            <p>Click on any card above to inspect how your respiratory tract is organized.</p>
+        </div>
+
+        <div class="quiz-box">
+            <h4>⚡ Mission 1 Check: How are living things organized from smallest to largest?</h4>
+            <div class="quiz-options">
+                <button class="quiz-opt" onclick="checkQuiz(0, false, this, 'Not quite! Organs are much larger than cells and tissues.')">
+                    Organ → Cell → Tissue → Organ System
+                </button>
+                <button class="quiz-opt" onclick="checkQuiz(0, true, this, 'Correct! Specialized cells group together to form epithelial tissue, which lines your lung organs inside the respiratory system.')">
+                    Cell → Tissue → Organ → Organ System
+                </button>
+                <button class="quiz-opt" onclick="checkQuiz(0, false, this, 'Close, but cells make up tissues, not the other way around!')">
+                    Tissue → Cell → Organ System → Organ
+                </button>
+            </div>
+            <div class="feedback-msg" id="feedback0"></div>
+        </div>
+    </section>
+
+    <!-- ================= MISSION 2: ORGANELLES ================= -->
+    <section class="mission-section" id="mission1">
+        <h2>Mission 2: Inside a Healthy Airway Cell</h2>
+        <p class="subtitle">Curriculum Goal: Identify key cell components (nucleus, cell membrane, mitochondria, cytoplasm) and explain their functions.</p>
+
+        <div class="case-brief">
+            <strong>🔬 Histologist Note:</strong> Your airways are lined with <strong>ciliated epithelial cells</strong>. Before RSV attacks, click on all <strong>5 parts of the healthy cell</strong> inside the diagram below to scan their functions!
+        </div>
+
+        <div class="cell-explorer">
+            <div class="svg-container">
+                <svg viewBox="0 0 360 320" width="100%" height="300">
+                    <!-- Cilia at top (Apical surface) -->
+                    <g class="organelle-hotspot" onclick="scanOrganelle('cilia')">
+                        <path d="M90,60 Q85,20 95,15 M115,60 Q110,20 120,15 M140,60 Q135,20 145,15 M165,60 Q160,20 170,15 M190,60 Q185,20 195,15 M215,60 Q210,20 220,15 M240,60 Q235,20 245,15 M265,60 Q260,20 270,15" stroke="#0d9488" stroke-width="5" fill="none" stroke-linecap="round"/>
+                        <rect x="80" y="10" width="200" height="50" fill="transparent"/>
+                        <text x="180" y="45" text-anchor="middle" fill="#0f766e" font-size="12" font-weight="bold">Click Cilia</text>
+                    </g>
+
+                    <!-- Cell Membrane (Outer Border) -->
+                    <rect x="80" y="60" width="200" height="230" rx="22" fill="#e0f2fe" stroke="#0284c7" stroke-width="8" class="organelle-hotspot" onclick="scanOrganelle('membrane')"/>
+
+                    <!-- Cytoplasm Click Area -->
+                    <rect x="95" y="75" width="170" height="200" rx="14" fill="#bae6fd" class="organelle-hotspot" onclick="scanOrganelle('cytoplasm')"/>
+                    <text x="180" y="115" text-anchor="middle" fill="#0369a1" font-size="13" font-weight="bold" pointer-events="none">Cytoplasm (Fluid)</text>
+
+                    <!-- Mitochondria 1 & 2 -->
+                    <g class="organelle-hotspot" onclick="scanOrganelle('mitochondria')">
+                        <ellipse cx="130" cy="160" rx="28" ry="15" fill="#f97316" stroke="#c2410c" stroke-width="3"/>
+                        <path d="M110,160 Q120,150 130,160 T150,160" stroke="#ffedd5" stroke-width="2" fill="none"/>
+                        <ellipse cx="235" cy="235" rx="28" ry="15" fill="#f97316" stroke="#c2410c" stroke-width="3"/>
+                        <path d="M215,235 Q225,225 235,235 T255,235" stroke="#ffedd5" stroke-width="2" fill="none"/>
+                        <text x="130" y="188" text-anchor="middle" fill="#9a3412" font-size="11" font-weight="bold">Mitochondria</text>
+                    </g>
+
+                    <!-- Nucleus -->
+                    <g class="organelle-hotspot" onclick="scanOrganelle('nucleus')">
+                        <circle cx="185" cy="210" r="38" fill="#7c3aed" stroke="#4c1d95" stroke-width="4"/>
+                        <circle cx="195" cy="202" r="12" fill="#c4b5fd"/>
+                        <text x="185" y="215" text-anchor="middle" fill="#ffffff" font-size="13" font-weight="bold">Nucleus</text>
+                    </g>
+
+                    <!-- Membrane Label -->
+                    <text x="180" y="282" text-anchor="middle" fill="#0369a1" font-size="12" font-weight="bold" pointer-events="none">Outer Border = Cell Membrane</text>
+                </svg>
+            </div>
+
+            <div>
+                <div class="info-panel" id="organelleInfo">
+                    <h3>👆 Click an Organelle on the Left</h3>
+                    <p>Scan all 5 cellular structures to unlock the Mission 2 verification question.</p>
+                </div>
+
+                <div class="checklist">
+                    <span class="check-pill" id="pill-nucleus">⬜ Nucleus</span>
+                    <span class="check-pill" id="pill-membrane">⬜ Cell Membrane</span>
+                    <span class="check-pill" id="pill-mitochondria">⬜ Mitochondria</span>
+                    <span class="check-pill" id="pill-cytoplasm">⬜ Cytoplasm</span>
+                    <span class="check-pill" id="pill-cilia">⬜ Cilia</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="quiz-box">
+            <h4>⚡ Mission 2 Check: Why do ciliated airway cells need so many mitochondria?</h4>
+            <div class="quiz-options">
+                <button class="quiz-opt" onclick="checkQuiz(1, true, this, 'Spot on! Mitochondria are the powerhouses of the cell—they generate the energy needed to keep cilia beating and sweeping mucus out of your lungs.')">
+                    To produce the energy needed to keep the cilia constantly beating and sweeping out mucus
+                </button>
+                <button class="quiz-opt" onclick="checkQuiz(1, false, this, 'Storing DNA is the job of the Nucleus!')">
+                    To store the cell’s DNA and genetic instructions
+                </button>
+                <button class="quiz-opt" onclick="checkQuiz(1, false, this, 'Controlling what enters and leaves the cell is the job of the Cell Membrane!')">
+                    To act as the outer gatekeeper that controls what enters and exits the cell
+                </button>
+            </div>
+            <div class="feedback-msg" id="feedback1"></div>
+        </div>
+    </section>
+
+    <!-- ================= MISSION 3: RSV SYNCYTIA SIMULATOR ================= -->
+    <section class="mission-section" id="mission2">
+        <h2>Mission 3: How RSV Builds a "Syncytium" Monster</h2>
+        <p class="subtitle">Pathology Goal: Analyze how RSV alters normal cell and tissue architecture.</p>
+
+        <div class="case-brief">
+            <strong>🦠 Why is it called "Syncytial"?</strong> RSV carries a special weapon on its surface called the <strong>F-Protein (Fusion Protein)</strong>. Once RSV infects an epithelial cell, it forces the <strong>cell membranes</strong> of neighboring cells to melt and fuse together! Multiple cells merge their <strong>cytoplasm</strong> into one giant, dying blob with multiple <strong>nuclei</strong> called a <strong>syncytium</strong>.
+        </div>
+
+        <div class="sim-stage">
+            <div class="sim-controls">
+                <div>
+                    <strong>Simulation Timeline:</strong> Click each stage to watch RSV transform healthy epithelial tissue:
+                </div>
+                <div class="stage-buttons">
+                    <button class="stage-btn active" onclick="setRsvStage(0, this)">Stage 1: Healthy Tissue</button>
+                    <button class="stage-btn" onclick="setRsvStage(1, this)">Stage 2: RSV Attachment</button>
+                    <button class="stage-btn" onclick="setRsvStage(2, this)">Stage 3: Membrane Fusion (Syncytium!)</button>
+                    <button class="stage-btn" onclick="setRsvStage(3, this)">Stage 4: Airway Clogged</button>
+                </div>
+            </div>
+
+            <!-- Interactive SVG Tissue Simulation -->
+            <div style="background:#0f172a; border-radius:12px; padding:1rem; text-align:center;">
+                <svg id="rsvSimSvg" viewBox="0 0 600 230" width="100%" height="220">
+                    <!-- Dynamic SVG rendered by JS -->
+                </svg>
+            </div>
+
+            <div class="sim-readout" id="simMetrics">
+                <!-- Populated by JS -->
+            </div>
+        </div>
+
+        <div class="quiz-box">
+            <h4>⚡ Mission 3 Check: What happens to epithelial cells when RSV triggers a "syncytium"?</h4>
+            <div class="quiz-options">
+                <button class="quiz-opt" onclick="checkQuiz(2, false, this, 'Actually, the cells do the opposite—they fuse together instead of shrinking!')">
+                    Each cell grows a thick bacterial cell wall and shrinks
+                </button>
+                <button class="quiz-opt" onclick="checkQuiz(2, true, this, 'Exactly! RSV breaks down neighboring cell membranes, fusing their cytoplasm into one giant cell with multiple nuclei and broken cilia.')">
+                    Neighboring cell membranes fuse together, merging their cytoplasm and nuclei into one giant multi-nucleated cell
+                </button>
+                <button class="quiz-opt" onclick="checkQuiz(2, false, this, 'Mitochondria do not turn into viruses.')">
+                    The mitochondria turn into new lungs
+                </button>
+            </div>
+            <div class="feedback-msg" id="feedback2"></div>
+        </div>
+    </section>
+
+    <!-- ================= MISSION 4: HISTOLOGY & H&E STAINING ================= -->
+    <section class="mission-section" id="mission3">
+        <h2>Mission 4: The Histology & Microscopy Lab</h2>
+        <p class="subtitle">Histology Goal: Prepare a tissue slide using fixation and H&E staining, then diagnose the patient.</p>
+
+        <div class="case-brief">
+            <strong>🧪 Why do we stain tissues?</strong> Real cells are mostly clear! To see them under a microscope, histologists preserve the tissue (<strong>Fixation</strong>) and dip it in two dyes called <strong>H&E (Hematoxylin & Eosin)</strong>:
+            <ul style="margin-top:0.5rem; margin-left:1.5rem;">
+                <li><strong>Hematoxylin (Purple/Blue):</strong> Stains the <strong>Nuclei</strong> deep purple.</li>
+                <li><strong>Eosin (Pink/Red):</strong> Stains the <strong>Cytoplasm</strong> and proteins bright pink.</li>
+            </ul>
+        </div>
+
+        <div class="lab-bench">
+            <div class="info-panel">
+                <h3>Step 1: Prepare & Focus Slide</h3>
+                <p style="margin:0.5rem 0;">1. Choose a biopsy sample:</p>
+                <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+                    <button class="btn-primary" style="background:#0d9488;" onclick="setSlideType('healthy')">Healthy Bronchiole</button>
+                    <button class="btn-primary" style="background:#e11d48;" onclick="setSlideType('rsv')">Patient X (RSV)</button>
+                </div>
+
+                <p style="margin:0.5rem 0;">2. Apply Histological Stain:</p>
+                <div style="display:flex; gap:0.5rem; margin-bottom:1rem;">
+                    <button class="stage-btn" onclick="setStain(false)">Unstained (Clear)</button>
+                    <button class="stage-btn active" onclick="setStain(true)">Apply H&E Stain (Purple/Pink)</button>
+                </div>
+
+                <p style="margin:0.5rem 0;">3. Adjust Microscope Focus Knob:</p>
+                <input type="range" id="focusSlider" min="0" max="10" value="8" style="width:100%;" oninput="updateMicroscope()">
+                <small style="color:var(--muted);">Slide to 5 for crisp optical focus!</small>
+
+                <div id="slideDescription" style="margin-top:1rem; padding:0.75rem; background:#eff6ff; border-radius:8px; font-size:0.9rem;">
+                    Adjust the focus slider to <strong>5</strong> and apply the <strong>H&E stain</strong> to inspect the tissue!
+                </div>
+            </div>
+
+            <div style="text-align:center;">
+                <div class="microscope-viewport" id="microscopeView">
+                    <svg id="microscopeSvg" viewBox="0 0 260 260" width="100%" height="100%">
+                        <!-- Rendered by JS -->
+                    </svg>
+                </div>
+                <p style="margin-top:0.5rem; font-weight:600; color:var(--muted);">Virtual Light Microscope (400x)</p>
+            </div>
+        </div>
+
+        <div class="quiz-box">
+            <h4>⚡ Final Diagnostic Check: Under H&E staining, how can you spot an RSV-infected syncytium?</h4>
+            <div class="quiz-options">
+                <button class="quiz-opt" onclick="checkQuiz(3, true, this, 'Congratulations, Detective! You completed all 4 missions! A large pink cytoplasmic mass crowded with multiple purple nuclei is the classic histological hallmark of RSV.')">
+                    A giant pink blob of fused cytoplasm packed with a cluster of multiple purple nuclei
+                </button>
+                <button class="quiz-opt" onclick="checkQuiz(3, false, this, 'Remember: Hematoxylin stains nuclei purple, and Eosin stains cytoplasm pink!')">
+                    Completely invisible cells with green square nuclei
+                </button>
+                <button class="quiz-opt" onclick="checkQuiz(3, false, this, 'Healthy cells have neat, single nuclei—RSV causes them to fuse into multi-nucleated giant cells.')">
+                    Neat rows of separate cells with zero nuclei inside
+                </button>
+            </div>
+            <div class="feedback-msg" id="feedback3"></div>
+        </div>
+    </section>
+</main>
+
+<script>
+    // State tracking
+    const completedMissions = [false, false, false, false];
+    const scannedOrganelles = {
+        nucleus: false,
+        membrane: false,
+        mitochondria: false,
+        cytoplasm: false,
+        cilia: false
+    };
+    let currentSlide = 'rsv';
+    let isStained = true;
+
+    // Switch Mission Tabs
+    function switchTab(index) {
+        document.querySelectorAll('.mission-section').forEach((sec, i) => {
+            sec.classList.toggle('active', i === index);
+        });
+        document.querySelectorAll('.tab-btn').forEach((btn, i) => {
+            btn.classList.toggle('active', i === index);
+        });
+    }
+
+    // Mission 1: Hierarchy Inspector
+    function inspectLevel(level, cardEl) {
+        document.querySelectorAll('.level-card').forEach(c => c.classList.remove('selected'));
+        cardEl.classList.add('selected');
+
+        const descriptions = {
+            system: {
+                title: "1. Organ System: The Respiratory System",
+                text: "Your nose, trachea, and lungs work together as a complete system to bring oxygen into your body and remove carbon dioxide."
+            },
+            organ: {
+                title: "2. Organ: Lungs & Bronchioles",
+                text: "Inside the lungs, air travels through branching tubes called bronchioles that are as thin as a strand of spaghetti!"
+            },
+            tissue: {
+                title: "3. Tissue: Respiratory Epithelial Tissue",
+                text: "The inside wall of each bronchiole is lined with a protective sheet of tightly packed cells called epithelial tissue."
+            },
+            cell: {
+                title: "4. Cell: Ciliated Epithelial Cell",
+                text: "Each microscopic epithelial cell has tiny hair-like cilia on top that sweep dust and germs out of your lungs—and this is the exact cell RSV targets!"
+            }
+        };
+
+        const info = descriptions[level];
+        document.getElementById('zoomReadout').innerHTML = `
+            <h4 style="color:#38bdf8; margin-bottom:0.35rem;">${info.title}</h4>
+            <p>${info.text}</p>
+        `;
+    }
+
+    // Mission 2: Organelle Scanner
+    function scanOrganelle(key) {
+        const data = {
+            nucleus: {
+                title: "🟣 Nucleus (The Command Center)",
+                desc: "Holds the cell's DNA instructions. In a healthy epithelial cell, there is only ONE nucleus per cell. Under H&E staining, it turns deep purple!"
+            },
+            membrane: {
+                title: "🔵 Cell Membrane (The Security Gatekeeper)",
+                desc: "The flexible outer boundary that holds the cell together and controls what enters and exits. RSV attacks this membrane to fuse neighbor cells together!"
+            },
+            mitochondria: {
+                title: "🟠 Mitochondria (The Powerhouses)",
+                desc: "Generate energy (ATP) for the cell. Airway cells need lots of mitochondria to power their beating cilia 24/7."
+            },
+            cytoplasm: {
+                title: "💧 Cytoplasm (The Jelly-Like Interior)",
+                desc: "The fluid filling the cell that surrounds and supports all the organelles. When RSV fuses cells, their cytoplasm pools together!"
+            },
+            cilia: {
+                title: "🌿 Cilia (The Microscopic Brooms)",
+                desc: "Tiny hair-like projections on the top surface of airway epithelial cells that wave in sync to sweep mucus and trapped viruses upward."
+            }
+        };
+
+        scannedOrganelles[key] = true;
+        const pill = document.getElementById('pill-' + key);
+        pill.classList.add('done');
+        pill.textContent = '✅ ' + pill.textContent.replace('⬜ ', '').replace('✅ ', '');
+
+        const item = data[key];
+        document.getElementById('organelleInfo').innerHTML = `
+            <h3 style="color:var(--primary); margin-bottom:0.5rem;">${item.title}</h3>
+            <p>${item.desc}</p>
+        `;
+    }
+
+    // Mission 3: RSV Syncytia Simulator
+    function setRsvStage(stage, btnEl) {
+        if (btnEl) {
+            document.querySelectorAll('#mission2 .stage-btn').forEach(b => b.classList.remove('active'));
+            btnEl.classList.add('active');
+        }
+
+        const svg = document.getElementById('rsvSimSvg');
+        const metrics = document.getElementById('simMetrics');
+
+        if (stage === 0) {
+            // 4 separate healthy cells
+            svg.innerHTML = `
+                <text x="300" y="25" fill="#38bdf8" text-anchor="middle" font-weight="bold">Healthy Epithelial Tissue: 4 Separate Ciliated Cells</text>
+                ${[90, 200, 310, 420].map(x => `
+                    <path d="M${x+15},55 L${x+15},38 M${x+35},55 L${x+35},38 M${x+55},55 L${x+55},38 M${x+75},55 L${x+75},38" stroke="#2dd4bf" stroke-width="4" stroke-linecap="round"/>
+                    <rect x="${x}" y="55" width="95" height="135" rx="12" fill="#bae6fd" stroke="#0284c7" stroke-width="5"/>
+                    <circle cx="${x+47}" cy="135" r="20" fill="#7c3aed"/>
+                    <ellipse cx="${x+28}" cy="90" rx="12" ry="7" fill="#f97316"/>
+                `).join('')}
+                <rect x="70" y="192" width="465" height="12" rx="4" fill="#64748b"/>
+                <text x="300" y="220" fill="#cbd5e1" font-size="12" text-anchor="middle">Basement Membrane (Tissue Foundation)</text>
+            `;
+            metrics.innerHTML = `
+                <div class="metric-box"><strong>Cell Membranes:</strong> Intact & separate (4 distinct borders)</div>
+                <div class="metric-box"><strong>Nuclei Count:</strong> 1 Nucleus per cell</div>
+                <div class="metric-box"><strong>Cilia Action:</strong> 100% beating & clearing mucus</div>
+            `;
+        } else if (stage === 1) {
+            // RSV attaches to cilia/apical surface
+            svg.innerHTML = `
+                <text x="300" y="25" fill="#fbbf24" text-anchor="middle" font-weight="bold">RSV Particles Attach & Produce Viral F-Proteins</text>
+                ${[90, 200, 310, 420].map((x, idx) => `
+                    <path d="M${x+15},55 L${x+15},42 M${x+35},55 L${x+35},42 M${x+55},55 L${x+55},42 M${x+75},55 L${x+75},42" stroke="#f59e0b" stroke-width="4" stroke-linecap="round"/>
+                    <rect x="${x}" y="55" width="95" height="135" rx="12" fill="${idx === 1 || idx === 2 ? '#fecdd3' : '#bae6fd'}" stroke="${idx === 1 || idx === 2 ? '#e11d48' : '#0284c7'}" stroke-width="5"/>
+                    <circle cx="${x+47}" cy="135" r="20" fill="#7c3aed"/>
+                    ${idx === 1 || idx === 2 ? `<circle cx="${x+47}" cy="42" r="9" fill="#e11d48" stroke="#fff" stroke-width="2"/>` : ''}
+                `).join('')}
+                <rect x="70" y="192" width="465" height="12" rx="4" fill="#64748b"/>
+            `;
+            metrics.innerHTML = `
+                <div class="metric-box" style="border-color:#f59e0b"><strong>Cell Membranes:</strong> Viral F-proteins weakening side borders</div>
+                <div class="metric-box" style="border-color:#f59e0b"><strong>Organelle Stress:</strong> Mitochondria hijacked by virus</div>
+                <div class="metric-box" style="border-color:#f59e0b"><strong>Cilia Action:</strong> Slowing down (50%)</div>
+            `;
+        } else if (stage === 2) {
+            // Syncytium formed!
+            svg.innerHTML = `
+                <text x="300" y="25" fill="#fb7185" text-anchor="middle" font-weight="bold">SYNCYTIUM FORMED: Cell Membranes Dissolve & Cytoplasm Merges!</text>
+                <rect x="90" y="55" width="95" height="135" rx="12" fill="#bae6fd" stroke="#0284c7" stroke-width="5"/>
+                <circle cx="137" cy="135" r="20" fill="#7c3aed"/>
+                <!-- Giant fused syncytium of 3 cells -->
+                <rect x="200" y="50" width="315" height="140" rx="28" fill="#fda4af" stroke="#e11d48" stroke-width="6" stroke-dasharray="8,4"/>
+                <text x="357" y="82" fill="#881337" text-anchor="middle" font-weight="bold" font-size="14">GIANT MULTI-NUCLEATED SYNCYTIUM</text>
+                <circle cx="315" cy="135" r="21" fill="#6d28d9"/>
+                <circle cx="358" cy="125" r="21" fill="#6d28d9"/>
+                <circle cx="400" cy="138" r="21" fill="#6d28d9"/>
+                <rect x="70" y="192" width="465" height="12" rx="4" fill="#64748b"/>
+            `;
+            metrics.innerHTML = `
+                <div class="metric-box" style="border-color:#e11d48"><strong>Cell Membranes:</strong> Fused together! 3 cells merged into 1 giant blob</div>
+                <div class="metric-box" style="border-color:#e11d48"><strong>Nuclei Clumping:</strong> 3 Nuclei floating in shared cytoplasm</div>
+                <div class="metric-box" style="border-color:#e11d48"><strong>Cilia Action:</strong> Destroyed on fused cells (0%)</div>
+            `;
+        } else {
+            // Sloughing & airway obstruction
+            svg.innerHTML = `
+                <text x="300" y="22" fill="#f43f5e" text-anchor="middle" font-weight="bold">Dead Syncytia Detach & Plug the Narrow Bronchiole Airway!</text>
+                <!-- Mucus & detached syncytium floating in airway -->
+                <ellipse cx="320" cy="75" rx="150" ry="38" fill="#fde047" opacity="0.85"/>
+                <ellipse cx="330" cy="75" rx="85" ry="26" fill="#fb7185" stroke="#be123c" stroke-width="3"/>
+                <circle cx="305" cy="75" r="12" fill="#5b21b6"/>
+                <circle cx="330" cy="72" r="12" fill="#5b21b6"/>
+                <circle cx="355" cy="77" r="12" fill="#5b21b6"/>
+                <text x="330" y="128" fill="#fde047" text-anchor="middle" font-size="13" font-weight="bold">⬆️ Mucus + Dead Syncytia Plugging Airway Tube</text>
+                <!-- Exposed basement membrane -->
+                <rect x="90" y="135" width="95" height="55" rx="8" fill="#bae6fd" stroke="#0284c7" stroke-width="4"/>
+                <circle cx="137" cy="165" r="14" fill="#7c3aed"/>
+                <rect x="70" y="192" width="465" height="12" rx="4" fill="#64748b"/>
+            `;
+            metrics.innerHTML = `
+                <div class="metric-box" style="border-color:#e11d48"><strong>Tissue Damage:</strong> Fused syncytia die and slough off the wall</div>
+                <div class="metric-box" style="border-color:#e11d48"><strong>Airway Status:</strong> Blocked by dead cells & thick mucus</div>
+                <div class="metric-box" style="border-color:#e11d48"><strong>Patient Symptom:</strong> Wheezing & trouble breathing</div>
+            `;
+        }
+    }
+
+    // Mission 4: Virtual Microscope & H&E Staining
+    function setSlideType(type) {
+        currentSlide = type;
+        updateMicroscope();
+    }
+
+    function setStain(stained) {
+        isStained = stained;
+        updateMicroscope();
+    }
+
+    function updateMicroscope() {
+        const focusVal = parseInt(document.getElementById('focusSlider').value, 10);
+        const blurPx = Math.abs(focusVal - 5) * 1.3;
+        const viewport = document.getElementById('microscopeView');
+        viewport.style.filter = `blur(${blurPx}px)`;
+
+        const cytoplasmColor = isStained ? '#f472b6' : '#e2e8f0';
+        const nucleusColor = isStained ? '#581c87' : '#cbd5e1';
+        const borderColor = isStained ? '#db2777' : '#94a3b8';
+
+        const svg = document.getElementById('microscopeSvg');
+        const desc = document.getElementById('slideDescription');
+
+        if (currentSlide === 'healthy') {
+            svg.innerHTML = `
+                <rect width="260" height="260" fill="#fff1f2"/>
+                <!-- Neat ring of healthy epithelial cells around bronchiole lumen -->
+                <circle cx="130" cy="130" r="92" fill="${cytoplasmColor}" stroke="${borderColor}" stroke-width="4"/>
+                <circle cx="130" cy="130" r="55" fill="#ffffff" stroke="${borderColor}" stroke-width="3" stroke-dasharray="4,3"/>
+                <text x="130" y="135" text-anchor="middle" fill="#64748b" font-size="11" font-weight="bold">Open Airway</text>
+                ${[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map(angle => {
+                    const rad = angle * Math.PI / 180;
+                    const nx = 130 + Math.cos(rad) * 74;
+                    const ny = 130 + Math.sin(rad) * 74;
+                    return `<circle cx="${nx}" cy="${ny}" r="8" fill="${nucleusColor}"/>`;
+                }).join('')}
+            `;
+            desc.innerHTML = `<strong>Healthy Bronchiole Slide:</strong> Notice the wide-open white airway in the middle and the neat, evenly spaced single ${isStained ? 'purple nuclei' : 'unstained cells'} lining the ring.`;
+        } else {
+            svg.innerHTML = `
+                <rect width="260" height="260" fill="#fff1f2"/>
+                <circle cx="130" cy="130" r="98" fill="${cytoplasmColor}" stroke="${borderColor}" stroke-width="4"/>
+                <circle cx="130" cy="130" r="48" fill="${isStained ? '#fbcfe8' : '#f1f5f9'}"/>
+                <!-- Giant Syncytia blobs with clustered purple nuclei -->
+                <ellipse cx="95" cy="85" rx="34" ry="22" fill="${cytoplasmColor}" stroke="${borderColor}" stroke-width="3"/>
+                <circle cx="82" cy="82" r="8" fill="${nucleusColor}"/>
+                <circle cx="96" cy="88" r="8" fill="${nucleusColor}"/>
+                <circle cx="108" cy="80" r="8" fill="${nucleusColor}"/>
+                <circle cx="92" cy="75" r="8" fill="${nucleusColor}"/>
+
+                <ellipse cx="165" cy="155" rx="36" ry="24" fill="${cytoplasmColor}" stroke="${borderColor}" stroke-width="3"/>
+                <circle cx="152" cy="152" r="8" fill="${nucleusColor}"/>
+                <circle cx="166" cy="160" r="8" fill="${nucleusColor}"/>
+                <circle cx="178" cy="150" r="8" fill="${nucleusColor}"/>
+                <circle cx="162" cy="144" r="8" fill="${nucleusColor}"/>
+
+                <!-- Clogged airway debris -->
+                <text x="130" y="128" text-anchor="middle" fill="#881337" font-size="10" font-weight="bold">Syncytia + Mucus</text>
+            `;
+            desc.innerHTML = `<strong>Patient X (RSV) Slide:</strong> Spot the giant ${isStained ? 'pink cytoplasmic blobs (Eosin)' : 'blobs'} packed with clusters of multiple ${isStained ? 'purple nuclei (Hematoxylin)' : 'nuclei'}! These are <strong>syncytia</strong> clogging the airway.`;
+        }
+    }
+
+    // Quiz Verification & Progress Tracker
+    function checkQuiz(missionIndex, isCorrect, btnEl, feedbackText) {
+        const parent = btnEl.parentElement;
+        parent.querySelectorAll('.quiz-opt').forEach(b => {
+            b.classList.remove('correct', 'wrong');
+        });
+
+        const fb = document.getElementById('feedback' + missionIndex);
+        if (isCorrect) {
+            btnEl.classList.add('correct');
+            fb.style.color = 'var(--success)';
+            fb.textContent = '✅ ' + feedbackText;
+            completedMissions[missionIndex] = true;
+            document.getElementById('tab' + missionIndex).classList.add('completed');
+            document.getElementById('badge' + missionIndex).textContent = '✓';
+            updateProgress();
+        } else {
+            btnEl.classList.add('wrong');
+            fb.style.color = 'var(--danger)';
+            fb.textContent = '❌ ' + feedbackText;
+        }
+    }
+
+    function updateProgress() {
+        const count = completedMissions.filter(Boolean).length;
+        const pct = (count / 4) * 100;
+        document.getElementById('progressBar').style.width = pct + '%';
+        document.getElementById('progressText').textContent = `${count} / 4 Missions`;
+    }
+
+    // Initialize default views on load
+    setRsvStage(0);
+    updateMicroscope();
+</script>
+
 </body>
 </html>
